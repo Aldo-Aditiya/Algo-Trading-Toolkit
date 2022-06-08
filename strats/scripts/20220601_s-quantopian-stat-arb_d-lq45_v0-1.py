@@ -3,14 +3,12 @@ import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 
 import pandas_ta as ta
-import quantstats as qs
-qs.extend_pandas()
 
 import statsmodels.api as sm
 from statsmodels.regression.rolling import RollingOLS
 
 import json
-import datetime
+from datetime import datetime, timedelta
 
 class Strategy():
     '''
@@ -25,30 +23,34 @@ class Strategy():
     '''
     def __init__(self, config_filepath):
         # Data Directory and Sampling
-        # TODO - Change this according to the config template
-        config_dict = read_config(config_filepath)
-        self.data_dir = config_dict['base_data_dir']
-        self.lq45_dir = config_dict['lq45_dir']
-        self.lq45_index_filename = config_dict['lq45_index_filename']
-        self.lq45_list_filename = config_dict['lq45_list_filename']
-        # TODO - Dynamically calculate out of sample start date
-        self.out_sample_date_start = config_dict['out_sample_date_start']
-        self.benchmark_filepath = config_dict['base_benchmark_dir'] + config_dict['benchmark_filename']
+        config_dict = self.read_config(config_filepath)
+        run_params = config_dict['run_params']
+        
+        self.data_dir = run_params['base_data_dir']
+        self.lq45_dir = run_params['lq45_dir']
+        self.lq45_index_filename = run_params['lq45_index_filename']
+        self.lq45_list_filename = run_params['lq45_list_filename']
+        self.benchmark_filepath = run_params['base_benchmark_dir'] + run_params['benchmark_filename']
+        self.run_date_start = run_params['run_date_start']
         
         # Strategy Parameters
-        self.pair = config_dict['pair']
-        self.half_life = config_dict['half_life']
-        self.beta_lookback = config_dict['beta_lookback']
-        self.std = config_dict['std']
+        strat_params = config_dict['strat_params']
+        self.pair = strat_params['pair']
+        self.half_life = strat_params['half_life']
+        self.beta_lookback = strat_params['beta_lookback']
+        self.std = strat_params['std']
         
-    def read_config(config_filepath):
+        ## Dynamically calculate maximum lookback
+        self.max_lookback = max(self.beta_lookback, round(self.half_life))
+
+    def read_config(self, config_filepath):
         with open(config_filepath) as f:
             config_dict = json.load(f)
         return config_dict
     
     def prepare_data(self):
         # Prepare Stock Tickers
-        with open(self.data_dir + lq45_list, "r") as f:
+        with open(self.data_dir + self.lq45_list_filename, "r") as f:
             lq45_tickers = f.read().split('\n')
 
         ## Prepare active tickers for international codes
@@ -61,26 +63,33 @@ class Strategy():
         lq45_index_data = pd.read_csv(self.data_dir + self.lq45_index_filename)
 
         # Do Some basic data Operations 
-        ## (Fill NaN, take only certain data range, generate in sample an dout of sample data)
+        ## (Fill NaN, take only certain data range, generate in sample and out of sample data)
 
         lq45_out_df = {}
         for ticker in active_tickers_international:
             ## Fill NaN values with the earliest data
             lq45_df_dict[ticker].fillna(method='bfill', axis=0, inplace=True)
 
-            ## Take In Sample and Out Sample Data
+            ## Take Out Sample Data
+            ## Note: We take data (1) within previous 30 days from run_date_start, and (2) After run_date_start until today.
             lq45_df_dict[ticker]['Date'] = pd.to_datetime(lq45_df_dict[ticker]['Date'])
-            lq45_out_df[ticker] = lq45_df_dict[ticker][lq45_df_dict[ticker]['Date'] >= self.out_sample_date_start]
+            buff1_df = lq45_df_dict[ticker][lq45_df_dict[ticker]['Date'] < self.run_date_start].tail(self.max_lookback)
+            buff2_df = lq45_df_dict[ticker][lq45_df_dict[ticker]['Date'] >= self.run_date_start]
+            
+            lq45_out_df[ticker] = pd.concat([buff1_df, buff2_df], ignore_index=True, sort=False)
 
             ## Reset Index After Dropped
             lq45_out_df[ticker] = lq45_out_df[ticker].reset_index(drop=True)
 
-        ## Do the same for lq45 index data
+        # Do the same for lq45 index data
         lq45_index_data.fillna(method='bfill', axis=0, inplace=True)
-        lq45_index_data['Date'] = pd.to_datetime(lq45_index_data['Date'])
         
-        # Combine to one DF Dictionary
-        lq45_out_df['LQ45'] = lq45_index_data[lq45_index_data['Date'] >= self.out_sample_date_start]
+        lq45_index_data['Date'] = pd.to_datetime(lq45_index_data['Date'])
+        buff1_df = lq45_index_data[lq45_index_data['Date'] < self.run_date_start].tail(self.max_lookback)
+        buff2_df = lq45_index_data[lq45_index_data['Date'] >= self.run_date_start]
+        
+        ## Combine to one DF Dictionary
+        lq45_out_df['LQ45'] = pd.concat([buff1_df, buff2_df], ignore_index=True, sort=False)
         lq45_out_df['LQ45'] = lq45_out_df['LQ45'].reset_index(drop=True)
         
         return lq45_out_df
@@ -182,7 +191,7 @@ class Strategy():
             else:
                 df_proc["return"][i] = 0
 
-            if not(df["signal"][i] == ''):
+            if not(df_proc["signal"][i] == ''):
                 last_signal = df_proc["signal"][i] 
                 last_ticker = df_proc['signal_ticker'][i]
 
@@ -197,4 +206,4 @@ class Strategy():
         self.df_proc = self.prepare_indicators(self.df_data_dict)
         self.df_proc = self.gen_signals(self.df_proc)
         self.df_proc = self.calc_returns(self.df_proc)
-        self.save_results()
+        self.save_results(self.df_proc)
