@@ -1,5 +1,4 @@
 import numpy as np
-from math import floor
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -24,14 +23,15 @@ class Strategy():
     
     Data: LQ45 and Its Index
     '''
-
     def __init__(self, config_filepath):
         # Data Directory and Sampling
+        # TODO - Change this according to the config template
         config_dict = read_config(config_filepath)
         self.data_dir = config_dict['base_data_dir']
         self.lq45_dir = config_dict['lq45_dir']
         self.lq45_index_filename = config_dict['lq45_index_filename']
         self.lq45_list_filename = config_dict['lq45_list_filename']
+        # TODO - Dynamically calculate out of sample start date
         self.out_sample_date_start = config_dict['out_sample_date_start']
         self.benchmark_filepath = config_dict['base_benchmark_dir'] + config_dict['benchmark_filename']
         
@@ -107,7 +107,7 @@ class Strategy():
 
         # Generate Technical Indicators (BBand and SMA)
         df_proc.set_index('Date')
-        lookback = floor(self.half_life)
+        lookback = round(self.half_life)
         bbands = ta.bbands(df_proc['spread'], length=lookback, std=self.std)
 
         bbands_upper_cname = 'BBU' + '_' + str(lookback) + '_' + str(self.std) + '.0'
