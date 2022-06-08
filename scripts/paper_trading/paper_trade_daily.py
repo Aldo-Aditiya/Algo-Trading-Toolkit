@@ -34,8 +34,6 @@ def is_recently_drawdown(s_ret, delta=4):
         
     return indicator
 
-
-
 # Handle Arguments
 parser = argparse.ArgumentParser(description='')
 
