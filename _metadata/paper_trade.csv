@@ -1,2 +1,5 @@
 date_start,date_updated,day_count,active,benchmark_name,Cumulative Return,CAGR,Sharpe,Max DD %,Longest DD,DD?,config_filepath,benchmark_filepath
 2022-06-07,2022-06-08,1,True,20220607_INCO-ANTM_sq_v0-1,1.0,0.0,,,,False,/workspace/202205_idx-trading/scripts/paper_trading/config/20220607_INCO-ANTM_sq_v0-1.json,/workspace/202205_idx-trading/_benchmarks/paper_trading/20220607_INCO-ANTM_sq_v0-1.csv
+2022-06-07,2022-06-08,1,True,20220607_INCO-ANTM_sq_v0-2,1.0,0.0,,,,False,/workspace/202205_idx-trading/scripts/paper_trading/config/20220607_INCO-ANTM_sq_v0-2.json,/workspace/202205_idx-trading/_benchmarks/paper_trading/20220607_INCO-ANTM_sq_v0-2.csv
+2022-06-07,2022-06-08,1,True,20220607_TPIA-ITMG_sq_v0-1,1.0,0.0,,,,False,/workspace/202205_idx-trading/scripts/paper_trading/config/20220607_TPIA-ITMG_sq_v0-1.json,/workspace/202205_idx-trading/_benchmarks/paper_trading/20220607_TPIA-ITMG_sq_v0-1.csv
+2022-06-07,2022-06-08,1,True,20220607_TPIA-ITMG_sq_v0-2,1.0,0.0,,,,False,/workspace/202205_idx-trading/scripts/paper_trading/config/20220607_TPIA-ITMG_sq_v0-2.json,/workspace/202205_idx-trading/_benchmarks/paper_trading/20220607_TPIA-ITMG_sq_v0-2.csv

@@ -10,14 +10,14 @@
         "lq45_list_filename": "20220525_lq45-list.txt",
 
         "base_benchmark_dir": "/workspace/202205_idx-trading/_benchmarks/paper_trading/",
-        "benchmark_filename" : "20220607_INCO-ANTM_sq_v0-1.csv",
+        "benchmark_filename" : "20220607_TPIA-ITMG_sq_v0-1.csv",
         
         "run_date_start": "2022-06-07"
     },
     
     "strat_params":{
-        "pair": ["INCO.JK", "ANTM.JK"],
-        "half_life": 4,
+        "pair": ["TPIA.JK", "ITMG.JK"],
+        "half_life": 15,
         "beta_lookback": 30,
         "std": 1
     }
