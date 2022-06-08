@@ -34,7 +34,7 @@ def is_recently_drawdown(s_ret, delta=4):
         
     return indicator
 
-# TODO - Add Print statements to indicate this
+
 
 # Handle Arguments
 parser = argparse.ArgumentParser(description='')
@@ -71,24 +71,25 @@ s_df = strat.df_proc
 s_ret = s_df.set_index('Date')['return']
 
 row_buff = {
-               'date_start': run_date_start, 
-               'date_updated': datetime.now().strftime("%Y-%m-%d"),
-               'day_count': (datetime.now() - datetime.fromisoformat(run_date_start)).days,
-               'active': FLAGS.active,
-               'benchmark_name': os.path.splitext(run_params['benchmark_filename'])[0],
-               'Cumulative Return': s_df.iloc[-1]['cum_return'],
-               'CAGR': qs.stats.cagr(s_ret),
-               'Sharpe': qs.stats.sharpe(s_ret),
-               'Max DD %': qs.stats.drawdown_details(s_ret)['max drawdown'].min(),
-               'Longest DD': qs.stats.drawdown_details(s_ret)['days'].max(),
-               'DD?': is_recently_drawdown(s_ret, delta=4),
-               'config_filepath': FLAGS.config_filepath,
-               'benchmark_filepath': run_params['base_benchmark_dir'] + run_params['benchmark_filename']
+               'date_start': [run_date_start], 
+               'date_updated': [datetime.now().strftime("%Y-%m-%d")],
+               'day_count': [(datetime.now() - datetime.fromisoformat(run_date_start)).days],
+               'active': [FLAGS.active],
+               'benchmark_name': [os.path.splitext(run_params['benchmark_filename'])[0]],
+               'Cumulative Return': [s_df.iloc[-1]['cum_return']],
+               'CAGR': [qs.stats.cagr(s_ret)],
+               'Sharpe': [qs.stats.sharpe(s_ret)],
+               'Max DD %': [qs.stats.drawdown_details(s_ret)['max drawdown'].min()],
+               'Longest DD': [qs.stats.drawdown_details(s_ret)['days'].max()],
+               'DD?': [is_recently_drawdown(s_ret, delta=4)],
+               'config_filepath': [FLAGS.config_filepath],
+               'benchmark_filepath': [run_params['base_benchmark_dir'] + run_params['benchmark_filename']]
            }
 
-# Replace the strat row with the same benchmark_name by this row buff, and Save
-if csv_df.loc[csv_df['benchmark_name'] == row_buff['benchmark_name']].empty:
-    csv_df = pd.concat([csv_df, pd.DataFrame(row_buff, index=[0])], ignore_index=True, sort=False)
+# Replace the strat row with the same benchmark_name by this row_buff, and save
+if csv_df.loc[csv_df['benchmark_name'].isin(row_buff['benchmark_name'])].empty:
+    csv_df = pd.concat([csv_df, pd.DataFrame(row_buff)], ignore_index=True, sort=False)
 else: 
-    csv_df.loc[csv_df['benchmark_name'] == row_buff['benchmark_name']] = pd.DataFrame(row_buff, index=[0])
+    index = csv_df.loc[csv_df['benchmark_name'].isin(row_buff['benchmark_name'])].index
+    csv_df.iloc[index] = pd.DataFrame(row_buff)
 csv_df.to_csv(csv_filepath, index=False)
