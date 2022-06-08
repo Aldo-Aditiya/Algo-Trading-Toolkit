@@ -29,16 +29,16 @@ paper_trading_config_run = config_dict["paper_trading_config_run"]
 cron_history = "cron_history.pkl"
 
 # Run Data Pull
-print("\n--Data Pull")
+print("\n---- Data Pull")
 for runfile in data_pull_run:
-    print("Run Data Pull On: " + runfile)
+    print("--Run Data Pull On: " + runfile)
     data_pull_filepath = data_pull_file_dir + runfile
     os.system("python " + data_pull_filepath)
 
-print("\n--Paper Trading")
+print("\n---- Paper Trading")
 # Run Paper Trading
 for confile in paper_trading_config_run:
-    print("Run Paper Trading On: " + confile)
+    print("--Run Paper Trading On: " + confile)
     paper_trading_confpath = paper_trading_config_dir + confile
     paper_trading_conf = read_config(paper_trading_confpath)
     paper_trading_filepath = paper_trading_file_dir + paper_trading_conf['run_params']['strat_run_filename']
