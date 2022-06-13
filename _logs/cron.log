@@ -1,0 +1,14 @@
+2022-06-13 12:43:16,814 | root | INFO | Start Running Cron
+2022-06-13 12:43:17,846 | root | INFO | Ran Data Pull using 20220525_lq45_index-pull.py
+2022-06-13 12:43:22,735 | root | INFO | Ran Data Pull using 20220525_lq45-pull.py
+2022-06-13 12:43:25,869 | root | INFO | Ran Paper Trading using 20220607_INCO-ANTM_sq_v0-1.json
+2022-06-13 12:43:28,991 | root | INFO | Ran Paper Trading using 20220607_INCO-ANTM_sq_v0-2.json
+2022-06-13 12:43:32,106 | root | INFO | Ran Paper Trading using 20220607_TPIA-ITMG_sq_v0-1.json
+2022-06-13 12:43:35,253 | root | INFO | Ran Paper Trading using 20220607_TPIA-ITMG_sq_v0-2.json
+2022-06-13 12:46:39,182 | root | INFO | Run Cron Job
+2022-06-13 12:46:40,029 | root | INFO | Run Data Pull on 20220525_lq45_index-pull.py
+2022-06-13 12:46:45,219 | root | INFO | Run Data Pull on 20220525_lq45-pull.py
+2022-06-13 12:46:48,373 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
+2022-06-13 12:46:51,528 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
+2022-06-13 12:46:54,654 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
+2022-06-13 12:46:57,784 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
