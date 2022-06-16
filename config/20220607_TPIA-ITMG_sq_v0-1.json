@@ -9,10 +9,17 @@
         "lq45_index_filename": "20220525_lq45_index.csv",
         "lq45_list_filename": "20220525_lq45-list.txt",
 
-        "base_benchmark_dir": "/workspace/202205_idx-trading/_benchmarks/paper_trading/",
-        "benchmark_filename" : "20220607_TPIA-ITMG_sq_v0-1.csv",
-        
+        "base_benchmark_dir": "/workspace/202205_idx-trading/_benchmarks/",
+        "benchmark_filename" : "20220607_TPIA-ITMG_sq_v0-1.csv"
+    },
+    
+    "paper_trade_params":{
         "run_date_start": "2022-06-07"
+    },
+    
+    "backtest_params":{
+        "run_date_start": "2022-01-01",
+        "run_date_end": "full"
     },
     
     "strat_params":{

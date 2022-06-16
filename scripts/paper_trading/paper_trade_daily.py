@@ -43,12 +43,15 @@ parser.add_argument('--active', type=bool, help='Whether the paper trading is st
 FLAGS = parser.parse_args()
 
 # Import the Strategy
-## Get Strategy File Path
+## Get Relevant Config
 config_dict = read_config(FLAGS.config_filepath)
 run_params = config_dict['run_params']
+
 strat_dir = run_params['base_strat_dir']
 strat_filename = run_params['strat_filename']
 strat_filepath = strat_dir + strat_filename
+benchmark_filepath = run_params['base_benchmark_dir'] + "paper_trading/" + run_params['benchmark_filename']
+run_date_start = config_dict['paper_trade_params']['run_date_start']
 
 ## Import Strategy using Importlib
 spec = importlib.util.spec_from_file_location("strategy", strat_filepath)
@@ -57,14 +60,13 @@ sys.modules["strategy"] = s
 spec.loader.exec_module(s)
 
 # Run the Strategy
-strat = s.Strategy(FLAGS.config_filepath)
+strat = s.Strategy(FLAGS.config_filepath, mode="paper_trade")
 strat.run()
+strat.df_proc.to_csv(benchmark_filepath)
 
 # Update paper_trade.csv with current run
 csv_filepath = '/workspace/202205_idx-trading/_metadata/paper_trade.csv'
 csv_df = pd.read_csv(csv_filepath)
-
-run_date_start = run_params['run_date_start']
 s_df = strat.df_proc
 s_ret = s_df.set_index('Date')['return']
 
@@ -81,7 +83,7 @@ row_buff = {
                'Longest DD': [qs.stats.drawdown_details(s_ret)['days'].max()],
                'DD?': [is_recently_drawdown(s_ret, delta=4)],
                'config_filepath': [FLAGS.config_filepath],
-               'benchmark_filepath': [run_params['base_benchmark_dir'] + run_params['benchmark_filename']]
+               'benchmark_filepath': [benchmark_filepath]
            }
 
 # Replace the strat row with the same benchmark_name by this row_buff, and save

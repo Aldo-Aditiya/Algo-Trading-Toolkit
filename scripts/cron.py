@@ -24,7 +24,7 @@ data_pull_file_dir = config_dict["data_pull_file_dir"]
 data_pull_run = config_dict["data_pull_run"]
 
 paper_trading_file_dir = config_dict["paper_trading_file_dir"]
-paper_trading_config_dir = config_dict["paper_trading_config_dir"]
+config_dir = config_dict["config_dir"]
 paper_trading_config_run = config_dict["paper_trading_config_run"]
 
 log_file_dir = config_dict["log_file_dir"]
@@ -51,7 +51,7 @@ print("\n---- Paper Trading")
 # Run Paper Trading
 for confile in paper_trading_config_run:
     print("--Run Paper Trading On: " + confile)
-    paper_trading_confpath = paper_trading_config_dir + confile
+    paper_trading_confpath = config_dir + confile
     paper_trading_conf = read_config(paper_trading_confpath)
     paper_trading_filepath = paper_trading_file_dir + paper_trading_conf['run_params']['strat_run_filename']
     

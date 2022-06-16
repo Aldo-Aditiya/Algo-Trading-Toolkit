@@ -21,7 +21,7 @@ class Strategy():
     
     Data: LQ45 and Its Index
     '''
-    def __init__(self, config_filepath):
+    def __init__(self, config_filepath, mode="paper_trade"):
         # Data Directory and Sampling
         config_dict = self.read_config(config_filepath)
         run_params = config_dict['run_params']
@@ -30,8 +30,17 @@ class Strategy():
         self.lq45_dir = run_params['lq45_dir']
         self.lq45_index_filename = run_params['lq45_index_filename']
         self.lq45_list_filename = run_params['lq45_list_filename']
-        self.benchmark_filepath = run_params['base_benchmark_dir'] + run_params['benchmark_filename']
-        self.run_date_start = run_params['run_date_start']
+        
+        if mode=="paper_trade":
+            self.run_date_start = config_dict['paper_trade_params']['run_date_start']
+        elif mode=="backtest":
+            self.run_date_start = config_dict['backtest_params']['run_date_start']
+            if config_dict['backtest_params']['run_date_end'] == 'full':
+                self.run_date_end = datetime.now().strftime("%Y-%m-%d")
+            else:
+                self.run_date_end = config_dict['backtest_params']['run_date_end']
+                
+        self.mode = mode
         
         # Strategy Parameters
         strat_params = config_dict['strat_params']
@@ -73,10 +82,14 @@ class Strategy():
             ## Take Out Sample Data
             ## Note: We take data (1) within previous 30 days from run_date_start, and (2) After run_date_start until today.
             lq45_df_dict[ticker]['Date'] = pd.to_datetime(lq45_df_dict[ticker]['Date'])
-            buff1_df = lq45_df_dict[ticker][lq45_df_dict[ticker]['Date'] < self.run_date_start].tail(self.max_lookback)
-            buff2_df = lq45_df_dict[ticker][lq45_df_dict[ticker]['Date'] >= self.run_date_start]
-            
-            lq45_out_df[ticker] = pd.concat([buff1_df, buff2_df], ignore_index=True, sort=False)
+            if self.mode == "paper_trade":
+                buff1_df = lq45_df_dict[ticker][lq45_df_dict[ticker]['Date'] < self.run_date_start].tail(self.max_lookback)
+                buff2_df = lq45_df_dict[ticker][lq45_df_dict[ticker]['Date'] >= self.run_date_start]
+
+                lq45_out_df[ticker] = pd.concat([buff1_df, buff2_df], ignore_index=True, sort=False)
+            elif self.mode == "backtest":
+                lq45_out_df[ticker] = lq45_df_dict[ticker][(lq45_df_dict[ticker]['Date'] >= self.run_date_start) & 
+                                                           (lq45_df_dict[ticker]['Date'] <= self.run_date_end)]
 
             ## Reset Index After Dropped
             lq45_out_df[ticker] = lq45_out_df[ticker].reset_index(drop=True)
@@ -223,12 +236,8 @@ class Strategy():
         df_proc["cum_return"] = (1 + df_proc["return"]).cumprod()
         return df_proc
     
-    def save_results(self, df_proc):
-        df_proc.to_csv(self.benchmark_filepath)
-    
     def run(self):
         self.df_data_dict = self.prepare_data()
         self.df_proc = self.prepare_indicators(self.df_data_dict)
         self.df_proc = self.gen_signals(self.df_proc)
         self.df_proc = self.calc_returns(self.df_proc)
-        self.save_results(self.df_proc)
