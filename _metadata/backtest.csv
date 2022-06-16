@@ -1,0 +1,2 @@
+date_start,date_end,date_run,day_count,benchmark_name,Cumulative Return,CAGR,Sharpe,Max DD %,Longest DD,config_filepath,benchmark_filepath
+2022-01-01,2022-06-16,2022-06-16,166,20220607_INCO-ANTM_sq_v0-1,1.3132945980562356,0.8341209575816921,2.1031790817054423,-4.583333333333333,8,/workspace/202205_idx-trading/config/20220607_INCO-ANTM_sq_v0-1.json,/workspace/202205_idx-trading/_benchmarks/backtest/20220607_INCO-ANTM_sq_v0-1.csv
