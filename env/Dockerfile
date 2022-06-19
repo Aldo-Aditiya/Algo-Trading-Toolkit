@@ -18,10 +18,10 @@ RUN pip install uvicorn[standard]
 RUN pip install jupyterlab
 
 RUN apt-get update
-RUN apt-get install crontab
+RUN apt-get install cron -y
 
 # Install QOL Items
 # RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.1/zsh-in-docker.sh)"
 # RUN chsh -s zsh
-RUN apt-get install mc
-RUN apt-get install nano
+RUN apt-get install mc -y
+RUN apt-get install nano -y
