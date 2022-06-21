@@ -1,0 +1,32 @@
+{
+    "run_params":{
+        "base_strat_dir":"/workspace/202205_idx-trading/strats/scripts/",
+        "strat_filename": "20220606_s-quantopian-stat-arb_d-lq45_v0-2.py",
+        "strat_run_filename": "paper_trade_daily.py",
+
+        "base_data_dir": "/workspace/202205_idx-trading/_data/",
+        "lq45_dir": "/workspace/202205_idx-trading/_data/20220525_lq45/",
+        "lq45_index_filename": "20220525_lq45_index.csv",
+        "lq45_list_filename": "20220525_lq45-list.txt",
+
+        "base_benchmark_dir": "/workspace/202205_idx-trading/_benchmarks/",
+        "benchmark_filename" : "20220617_TPIA-ITMG_sq_v0-2-1.csv"
+    },
+    
+    "paper_trade_params":{
+        "run_date_start": "2022-06-07"
+    },
+    
+    "backtest_params":{
+        "run_date_start": "2022-01-01",
+        "run_date_end": "full"
+    },
+    
+    "strat_params":{
+        "pair": ["TPIA.JK", "ITMG.JK"],
+        "half_life": 15,
+        "beta_lookback": 14,
+        "std": 1
+    }
+}
+

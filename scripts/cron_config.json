@@ -12,7 +12,10 @@
         "20220607_INCO-ANTM_sq_v0-1.json",
         "20220607_INCO-ANTM_sq_v0-2.json",
         "20220607_TPIA-ITMG_sq_v0-1.json",
-        "20220607_TPIA-ITMG_sq_v0-2.json"
+        "20220607_TPIA-ITMG_sq_v0-2.json",
+        "20220617_BBNI-BMRI_sq_v0-2-1.json",
+        "20220617_INCO-ANTM_sq_v0-2-1.json",
+        "20220617_TPIA-ITMG_sq_v0-2-1.json"
     ],
     
     "log_file_dir": "/workspace/202205_idx-trading/_logs/cron.log"
