@@ -3,3 +3,8 @@
 strats/scripts/__pycache__
 strats/scripts/__pycache__
 scripts/paper_trading/api/__pycache__
+scripts/.DS_Store
+scripts/data_pull/.DS_Store
+scripts/paper_trading/.DS_Store
+strats/.DS_Store
+.DS_Store
