@@ -1,4 +1,4 @@
-#pytrading:v0.0.2
+#pytrading:v0.0.3
 
 FROM python:3.7.10
 
@@ -11,6 +11,7 @@ RUN pip install tqdm
 RUN pip install quantstats
 RUN pip install pandas_ta
 RUN pip install statsmodels
+RUN pip install arch
 RUN pip install alphalens
 RUN pip install yfinance
 RUN pip install fastapi
