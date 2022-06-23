@@ -1,6 +1,7 @@
 #pytrading:v0.0.4
 
-FROM python:3.7.10
+FROM brunneis/python:3.8.3-ubuntu-20.04
+ENTRYPOINT /bin/bash
 
 RUN pip install numpy
 RUN pip install pandas
@@ -12,16 +13,17 @@ RUN pip install quantstats
 RUN pip install pandas_ta
 RUN pip install statsmodels
 RUN pip install arch
-RUN pip install alphalens
 RUN pip install yfinance
 RUN pip install fastapi
 RUN pip install uvicorn[standard]
 RUN pip install jupyterlab
 
 # Install R
+RUN apt-get update
 RUN apt install dirmngr gnupg apt-transport-https ca-certificates software-properties-common -y
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
 RUN add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/'
+RUN apt-get update
 RUN apt install r-base -y
 RUN pip install rpy2[all]
 
@@ -33,3 +35,5 @@ RUN apt-get install cron -y
 # RUN chsh -s zsh
 RUN apt-get install mc -y
 RUN apt-get install nano -y
+
+
