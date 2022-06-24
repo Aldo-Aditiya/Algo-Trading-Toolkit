@@ -1,4 +1,4 @@
-#pytrading:v0.0.4
+#pytrading:v0.0.5
 
 FROM brunneis/python:3.8.3-ubuntu-20.04
 ENTRYPOINT /bin/bash
@@ -14,6 +14,7 @@ RUN pip install pandas_ta
 RUN pip install statsmodels
 RUN pip install arch
 RUN pip install yfinance
+RUN pip install python-binance
 RUN pip install fastapi
 RUN pip install uvicorn[standard]
 RUN pip install jupyterlab
@@ -26,6 +27,14 @@ RUN add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-c
 RUN apt-get update
 RUN apt install r-base -y
 RUN pip install rpy2[all]
+
+# Install R Packages
+RUN R -e "install.packages(quantmod)"
+RUN R -e "install.packages(timeSeries)"
+RUN R -e "install.packages(rugarch)"
+RUN R -e "install.packages(lattice)"
+RUN R -e "install.packages(IRkernel)"
+RUN R -e "IRkernel::installspec(user = FALSE)"
 
 RUN apt-get update
 RUN apt-get install cron -y
