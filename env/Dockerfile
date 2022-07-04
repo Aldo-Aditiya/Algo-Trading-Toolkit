@@ -1,4 +1,4 @@
-#pytrading:v0.0.5
+#pytrading:v0.0.6
 
 FROM brunneis/python:3.8.3-ubuntu-20.04
 ENTRYPOINT /bin/bash
@@ -18,6 +18,10 @@ RUN pip install python-binance
 RUN pip install fastapi
 RUN pip install uvicorn[standard]
 RUN pip install jupyterlab
+RUN pip install swifter
+RUN pip install papermill
+RUN pip install mlflow
+RUN pip install black
 
 # Install R
 RUN apt-get update
