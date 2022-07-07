@@ -143,3 +143,13 @@
 2022-06-30 14:26:48,111 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
 2022-06-30 14:26:52,283 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
 2022-06-30 14:26:56,580 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
+2022-07-07 14:31:53,689 | root | INFO | Run Cron Job
+2022-07-07 14:31:58,571 | root | INFO | Run Data Pull on 20220525_lq45_index-pull.py
+2022-07-07 14:32:30,380 | root | INFO | Run Data Pull on 20220525_lq45-pull.py
+2022-07-07 14:32:43,829 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
+2022-07-07 14:32:49,035 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
+2022-07-07 14:32:58,235 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
+2022-07-07 14:33:06,187 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
+2022-07-07 14:33:12,232 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
+2022-07-07 14:33:18,198 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
+2022-07-07 14:33:24,481 | root | INFO | Run Paper Trading on 20220525_lq45-pull.py
