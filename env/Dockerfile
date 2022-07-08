@@ -33,11 +33,11 @@ RUN apt install r-base -y
 RUN pip install rpy2[all]
 
 # Install R Packages
-RUN R -e "install.packages(quantmod)"
-RUN R -e "install.packages(timeSeries)"
-RUN R -e "install.packages(rugarch)"
-RUN R -e "install.packages(lattice)"
-RUN R -e "install.packages(IRkernel)"
+RUN R -e "install.packages('quantmod')"
+RUN R -e "install.packages('timeSeries')"
+RUN R -e "install.packages('rugarch')"
+RUN R -e "install.packages('lattice')"
+RUN R -e "install.packages('IRkernel')"
 RUN R -e "IRkernel::installspec(user = FALSE)"
 
 RUN apt-get update
