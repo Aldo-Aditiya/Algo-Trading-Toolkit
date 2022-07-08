@@ -42,6 +42,7 @@ RUN R -e "IRkernel::installspec(user = FALSE)"
 
 RUN apt-get update
 RUN apt-get install cron -y
+RUN apt-get install git
 
 # Install QOL Items
 # RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.1/zsh-in-docker.sh)"
