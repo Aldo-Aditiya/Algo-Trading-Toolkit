@@ -1,5 +1,5 @@
 #!/bin/bash
-/usr/local/bin/python /workspace/202205_idx-trading/scripts/cron.py
+/usr/bin/python /workspace/202205_idx-trading/scripts/cron.py
 git add /workspace/202205_idx-trading/_benchmarks/paper_trading/
 git add /workspace/202205_idx-trading/_data/
 git add /workspace/202205_idx-trading/_logs/cron.log
