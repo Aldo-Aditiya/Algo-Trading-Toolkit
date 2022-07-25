@@ -271,6 +271,8 @@ class Strategy():
                     df_proc['signal_ticker'][i] = pair[0]
                 else:
                     df_proc['signal'][i] = ''
+                    
+        df_proc.loc[df_proc['Date'] < self.run_date_start, 'signal'] = ""
 
         return df_proc
     
