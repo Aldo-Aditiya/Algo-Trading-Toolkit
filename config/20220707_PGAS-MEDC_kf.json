@@ -1,0 +1,32 @@
+{
+    "run_params":{
+        "base_strat_dir":"/workspace/202205_idx-trading/strats/scripts/",
+        "strat_filename": "20220628_s-stat-arb_d-lq45_kf.py",
+        "strat_run_filename": "paper_trade_daily.py",
+
+        "base_data_dir": "/workspace/202205_idx-trading/_data/",
+        "lq45_dir": "/workspace/202205_idx-trading/_data/20220525_lq45/",
+        "lq45_index_filename": "20220525_lq45_index.csv",
+        "lq45_list_filename": "20220525_lq45-list.txt",
+
+        "base_benchmark_dir": "/workspace/202205_idx-trading/_benchmarks/",
+        "benchmark_filename" : "20220707_PGAS-MEDC_kf.csv"
+    },
+    
+    "paper_trade_params":{
+        "run_date_start": "2022-07-07"
+    },
+    
+    "backtest_params":{
+        "run_date_start": "2022-01-01",
+        "run_date_end": "full"
+    },
+    
+    "strat_params":{
+        "pair": ["PGAS.JK", "MEDC.JK"],
+        "half_life": 37,
+        "beta_lookback": 30,
+        "std": 1
+    }
+}
+
