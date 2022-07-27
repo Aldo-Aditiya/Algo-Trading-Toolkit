@@ -23,6 +23,10 @@
     },
     
     "strat_params":{
+        "ticker_weights":{
+            "BBNI.JK": 0.5,
+            "BMRI.JK": 0.5
+        },
         "pair": ["BBNI.JK", "BMRI.JK"],
         "half_life": 6,
         "beta_lookback": 14,

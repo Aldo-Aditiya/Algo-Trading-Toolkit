@@ -23,6 +23,10 @@
     },
     
     "strat_params":{
+        "ticker_weights":{
+            "ERAA.JK": 0.5,
+            "AMRT.JK": 0.5
+        },
         "pair": ["ERAA.JK", "AMRT.JK"],
         "half_life": 52,
         "beta_lookback": 30,

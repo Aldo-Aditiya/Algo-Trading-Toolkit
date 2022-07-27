@@ -23,6 +23,10 @@
     },
     
     "strat_params":{
+        "ticker_weights":{
+            "TPIA.JK": 0.5,
+            "ITMG.JK": 0.5
+        },
         "pair": ["TPIA.JK", "ITMG.JK"],
         "half_life": 15,
         "beta_lookback": 14,

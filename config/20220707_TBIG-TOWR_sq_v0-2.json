@@ -23,6 +23,10 @@
     },
     
     "strat_params":{
+        "ticker_weights":{
+            "TBIG.JK": 0.5,
+            "TOWR.JK": 0.5
+        },
         "pair": ["TBIG.JK", "TOWR.JK"],
         "half_life": 45,
         "beta_lookback": 30,

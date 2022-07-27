@@ -23,6 +23,10 @@
     },
     
     "strat_params":{
+        "ticker_weights":{
+            "HRUM.JK": 0.5,
+            "ADRO.JK": 0.5
+        },
         "pair": ["HRUM.JK", "ADRO.JK"],
         "half_life": 18,
         "beta_lookback": 30,

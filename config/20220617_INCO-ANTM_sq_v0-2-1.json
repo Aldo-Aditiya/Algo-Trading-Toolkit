@@ -23,6 +23,10 @@
     },
     
     "strat_params":{
+        "ticker_weights":{
+            "INCO.JK": 0.5,
+            "ANTM.JK": 0.5
+        },
         "pair": ["INCO.JK", "ANTM.JK"],
         "half_life": 4,
         "beta_lookback": 14,
