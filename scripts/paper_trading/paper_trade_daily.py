@@ -11,30 +11,16 @@ import json
 import importlib
 from datetime import datetime, timedelta
 
-def read_config(config_filepath):
-    '''
-    Read JSON config file as dictionary
-    '''
-    with open(config_filepath) as f:
-        config_dict = json.load(f)
-    return config_dict
+''' Import custom Library '''
+lib_path = '/workspace/202205_idx-trading/lib'
+sys.path.insert(0, lib_path)
+# Read Imports
+from backtest import Backtest
+from utils import read_config
+sys.path.remove(lib_path)
 
-def is_recently_drawdown(s_ret, delta=4):
-    '''
-    Check if within the previous delta number of days there is a drawdown
-    '''
-    # TODO - Check if this still applies
-    dd_details = qs.stats.drawdown_details(s_ret)
-    dts = [(datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(delta)]
-    
-    indicator = False
-    for dt in dts:
-        if dt in dd_details['end'].values:
-            indicator = True
-        
-    return indicator
 
-# Handle Arguments
+''' Read Configs '''
 parser = argparse.ArgumentParser(description='')
 
 parser.add_argument('--config_filepath', type=str, help='File path for config file', dest='config_filepath')
@@ -42,8 +28,7 @@ parser.add_argument('--active', type=bool, help='Whether the paper trading is st
 
 FLAGS = parser.parse_args()
 
-# Import the Strategy
-## Get Relevant Config
+# Get Relevant Config
 config_dict = read_config(FLAGS.config_filepath)
 run_params = config_dict['run_params']
 
@@ -53,38 +38,47 @@ strat_filepath = strat_dir + strat_filename
 benchmark_filepath = run_params['base_benchmark_dir'] + "paper_trading/" + run_params['benchmark_filename']
 run_date_start = config_dict['paper_trade_params']['run_date_start']
 
-## Import Strategy using Importlib
+ticker_weights = config_dict['strat_params']['ticker_weights']
+
+
+''' Import the Strategy '''
 spec = importlib.util.spec_from_file_location("strategy", strat_filepath)
-s = importlib.util.module_from_spec(spec)
-sys.modules["strategy"] = s
-spec.loader.exec_module(s)
+strat = importlib.util.module_from_spec(spec)
+sys.modules["strategy"] = strat
+spec.loader.exec_module(strat)
 
-# Run the Strategy
-strat = s.Strategy(FLAGS.config_filepath, mode="paper_trade")
-strat.run()
-strat.df_proc.to_csv(benchmark_filepath)
 
-# Update paper_trade.csv with current run
+''' Run and Generate Strategy Metrics '''
+s = strat.Strategy(FLAGS.config_filepath, mode="paper_trade")
+s_df = s.run()
+
+b = Backtest()
+result_dict = b.run(s_df, ticker_weights, prep_result_to_df=True)
+
+b.strat_df.to_csv(benchmark_filepath)
+
+
+''' Update paper_trade.csv with current run '''
 csv_filepath = '/workspace/202205_idx-trading/_metadata/paper_trade.csv'
 csv_df = pd.read_csv(csv_filepath)
-s_df = strat.df_proc
-s_ret = s_df.set_index('Date')['return']
 
-row_buff = {
-               'date_start': [run_date_start], 
-               'date_updated': [datetime.now().strftime("%Y-%m-%d")],
-               'day_count': [(datetime.now() - datetime.fromisoformat(run_date_start)).days],
-               'active': [FLAGS.active],
-               'benchmark_name': [os.path.splitext(run_params['benchmark_filename'])[0]],
-               'Cumulative Return': [s_df.iloc[-1]['cum_return']],
-               'CAGR': [qs.stats.cagr(s_ret)],
-               'Sharpe': [qs.stats.sharpe(s_ret)],
-               'Max DD %': [qs.stats.drawdown_details(s_ret)['max drawdown'].min()],
-               'Longest DD': [qs.stats.drawdown_details(s_ret)['days'].max()],
-               'DD?': [is_recently_drawdown(s_ret, delta=4)],
-               'config_filepath': [FLAGS.config_filepath],
-               'benchmark_filepath': [benchmark_filepath]
-           }
+# Define and Combine Relevant dict keys
+identifier_dict = {
+                       'date_start': [run_date_start], 
+                       'date_updated': [datetime.now().strftime("%Y-%m-%d")],
+                       'day_count': [(datetime.now() - datetime.fromisoformat(run_date_start)).days],
+                       'active': [FLAGS.active],
+                       'benchmark_name': [os.path.splitext(run_params['benchmark_filename'])[0]]
+                  }
+
+filepath_dict = {
+                    'config_filepath': [FLAGS.config_filepath],
+                    'benchmark_filepath': [benchmark_filepath]
+                }
+
+# TODO - If the backtest have newer columns, might want to add more columns (but keep older ones)
+buff_dict = dict(identifier_dict, **result_dict)
+row_buff = dict(buff_dict, **filepath_dict)
 
 # Replace the strat row with the same benchmark_name by this row_buff, and save
 if csv_df.loc[csv_df['benchmark_name'].isin(row_buff['benchmark_name'])].empty:

@@ -8,15 +8,14 @@ import pickle as pkl
 
 import logging
 
-def read_config(config_filepath):
-    '''
-    Read JSON config file as dictionary
-    '''
-    with open(config_filepath) as f:
-        config_dict = json.load(f)
-    return config_dict
+# Import custom Library
+lib_path = '/workspace/202205_idx-trading/lib'
+sys.path.insert(0, lib_path)
+## Read Imports
+from utils import read_config
+sys.path.remove(lib_path)
 
-# Read Config
+# Read Cron Config
 cron_config_filepath = "cron_config.json"
 config_dict = read_config(cron_config_filepath)
 
@@ -60,4 +59,4 @@ for confile in paper_trading_config_run:
               " --config_filepath=" + paper_trading_confpath + 
               " --active=True")
     
-    logging.info(f"Run Paper Trading on {runfile}")
+    logging.info(f"Run Paper Trading on {confile}")
