@@ -14,7 +14,6 @@ from sklearn.utils import resample
 from datetime import datetime, timedelta
 from tqdm import tqdm
 from matplotlib import pyplot as plt
-%matplotlib inline
 
 params = {'figure.facecolor': 'w'}
 plt.rcParams.update(params)
@@ -41,7 +40,7 @@ class Backtest():
             
         self.strat_df = None
         
-    def run(self, strat_df, ticker_weights):
+    def run(self, strat_df, ticker_weights, prep_result_to_df=False):
         '''
         Run Backtest and generate results
         '''
@@ -53,10 +52,13 @@ class Backtest():
         self.calc_hits_and_misses()
         
         # Metrics Calculations
-        self.result_dict = self.gen_metrics()
+        if prep_result_to_df:
+            self.result_dict = self.gen_metrics(elmt_to_list=True)
+        else:
+            self.result_dict = self.gen_metrics()
         return self.result_dict
     
-    def gen_metrics(self):
+    def gen_metrics(self, elmt_to_list=False):
         result_dict = {
                             "turnover": self.calc_turnover(),
                             "ratio_of_long": self.calc_ratio_of_longs(),
@@ -75,6 +77,10 @@ class Backtest():
                             "longest_dd": self.calc_dd(mode="longest"),
                             "currently_dd": self.calc_dd(mode="current")
                        }
+        
+        if elmt_to_list:
+            for key in result_dict:
+                result_dict[key] = [result_dict[key]]
         
         return result_dict
     
@@ -135,6 +141,9 @@ class Backtest():
         
     def get_strat_df(self):
         return self.strat_df.copy()
+    
+    def load_strat_df(self, strat_df):
+        self.strat_df = strat_df
     
     # Calculate Relevant Metrics
     
@@ -345,7 +354,11 @@ class Backtest():
                 long_ratio[t] = longs[t] / turnover[t]
             return long_ratio
         elif mode=="aggregate":
-            return sum(list(longs.values())) / sum(list(turnover.values()))
+            try:
+                long_ratio = sum(list(longs.values())) / sum(list(turnover.values()))
+            except:
+                long_ratio = 0
+            return long_ratio
     
     def calc_avg_holding_period(self, mode="aggregate"):
         '''
@@ -479,6 +492,11 @@ class Backtest():
             hm_t = "H/M_" + t
             
             hm_df = self.strat_df[hm_t][self.strat_df[hm_t] != ""] 
+            
+            if len(hm_df) == 0:
+                hms[t] = 0
+                continue
+            
             num_hits = len(hm_df[hm_df == "hit"])
             num_bets = len(hm_df)
             
@@ -490,7 +508,10 @@ class Backtest():
         if mode=="detailed":
             return hms
         elif mode=="aggregate":
-            return total_hits / total_bets
+            if total_bets == 0: 
+                return 0
+            else:
+                return total_hits / total_bets
     
     def calc_avg_returns_from_hits_and_misses(self, mode="aggregate"):
         '''
@@ -554,14 +575,31 @@ class Backtest():
             total_miss_return += sum(miss_cum_ret)
             total_miss += len(miss_cum_ret)
             
-            hit_avg = sum(hit_cum_ret) / len(hit_cum_ret)
-            miss_avg = sum(miss_cum_ret) / len(miss_cum_ret)
+            try:
+                hit_avg = sum(hit_cum_ret) / len(hit_cum_ret)
+            except:
+                hit_avg = 0
+                
+            try:
+                miss_avg = sum(miss_cum_ret) / len(miss_cum_ret)
+            except:
+                miss_avg = 0
             hm_avgs[t] = [hit_avg, miss_avg]
         
         if mode=="detailed":
             return hm_avgs
         elif mode=="aggregate":
-            return total_hit_return/total_hits, total_miss_return/total_miss
+            try:
+                avg_hit_ret = total_hit_return/total_hits
+            except:
+                avg_hit_ret = 0
+            
+            try:
+                avg_miss_ret = total_miss_return/total_miss
+            except:
+                avg_miss_ret = 0
+            
+            return avg_hit_ret, avg_miss_ret
     
     ## Drawdowns Metrics
     def calc_dd(self, s_df=None, mode="max"):
@@ -769,6 +807,8 @@ class Backtest():
         '''
         for signal_t in self.signal_tickers:
             buff_s_df = self.strat_df[self.strat_df[signal_t] != ""][signal_t]
+            
+            if len(buff_s_df) == 0: continue
             
             if buff_s_df[0] == "long_close" or buff_s_df[0] == "short_close":
                 buff_index = buff_s_df.index[0]
