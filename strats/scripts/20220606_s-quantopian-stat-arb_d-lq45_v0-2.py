@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -7,9 +9,19 @@ import pandas_ta as ta
 import statsmodels.api as sm
 from statsmodels.regression.rolling import RollingOLS
 
-import json
 from datetime import datetime, timedelta
 
+
+''' Import custom Library '''
+lib_path = '/workspace/202205_idx-trading/lib'
+sys.path.insert(0, lib_path)
+# Read Imports
+from utils import read_config
+from data_utils import gen_combined_df, extend_price_df, handle_nan
+sys.path.remove(lib_path)
+
+
+''' Strategy Definition '''
 class Strategy():
     '''
     Long-Only Bollinger Band Mean Reversion Strategy
@@ -23,7 +35,7 @@ class Strategy():
     '''
     def __init__(self, config_filepath, mode="paper_trade"):
         # Data Directory and Sampling
-        config_dict = self.read_config(config_filepath)
+        config_dict = read_config(config_filepath)
         run_params = config_dict['run_params']
         
         self.data_dir = run_params['base_data_dir']
@@ -52,97 +64,102 @@ class Strategy():
         ## Dynamically calculate maximum lookback
         self.max_lookback = max(self.beta_lookback, round(self.half_life))
 
-    def read_config(self, config_filepath):
-        with open(config_filepath) as f:
-            config_dict = json.load(f)
-        return config_dict
-    
     def prepare_data(self):
         # Prepare Stock Tickers
         with open(self.data_dir + self.lq45_list_filename, "r") as f:
             lq45_tickers = f.read().split('\n')
 
         ## Prepare active tickers for international codes
-        active_tickers_international = [f + '.JK' for f in lq45_tickers]
-
-        # Read data from each ticker's csv
-        lq45_df_dict = {}
-        for ticker in active_tickers_international:
-            lq45_df_dict[ticker] = pd.read_csv(self.lq45_dir + ticker + '.csv')
-        lq45_index_data = pd.read_csv(self.data_dir + self.lq45_index_filename)
+        active_tickers = [f + '.JK' for f in lq45_tickers]
+        active_tickers.append('LQ45')
 
         # Do Some basic data Operations 
-        ## (Fill NaN, take only certain data range, generate in sample and out of sample data)
+        nan_handle_method = 'bfill'
 
-        lq45_out_df = {}
-        for ticker in active_tickers_international:
-            ## Fill NaN values with the earliest data
-            lq45_df_dict[ticker].fillna(method='bfill', axis=0, inplace=True)
+        df_dict = {}
+        for ticker in active_tickers:
+            if ticker == 'LQ45':
+                df_dict[ticker] = pd.read_csv(self.data_dir + self.lq45_index_filename)
+            else:
+                df_dict[ticker] = pd.read_csv(self.lq45_dir + ticker + '.csv')
 
+            ## Take Only Date and Adjusted Close
+            df_dict[ticker] = df_dict[ticker][['Date', 'Adj Close']]
+            df_dict['Date'] = pd.to_datetime(df_dict[ticker]['Date'])
+            df_dict[ticker].set_index(pd.DatetimeIndex(df_dict[ticker]['Date']), inplace=True)
+
+            df_dict[ticker].drop('Date', axis=1, inplace=True)
+
+            ## Convert Adj Close to price
+            df_dict[ticker]['price'] = df_dict[ticker]['Adj Close']
+            df_dict[ticker].drop('Adj Close', axis=1, inplace=True)
+
+        # Separate into In Sample and Out Sample
+        nan_cnt_threshold = 252*2
+
+        in_df = {}
+        out_df = {}
+        rmv_tickers = []
+        for ticker in active_tickers:
             ## Take Out Sample Data
-            ## Note: We take data (1) within previous 30 days from run_date_start, and (2) After run_date_start until today.
-            lq45_df_dict[ticker]['Date'] = pd.to_datetime(lq45_df_dict[ticker]['Date'])
+            ## Note: We take data: (1) within previous 30 days from run_date_start, and (2) After run_date_start until today.
             if self.mode == "paper_trade":
-                buff1_df = lq45_df_dict[ticker][lq45_df_dict[ticker]['Date'] < self.run_date_start].tail(self.max_lookback)
-                buff2_df = lq45_df_dict[ticker][lq45_df_dict[ticker]['Date'] >= self.run_date_start]
+                buff1_df = df_dict[ticker][df_dict[ticker].index < self.run_date_start].tail(self.max_lookback)
+                buff2_df = df_dict[ticker][df_dict[ticker].index >= self.run_date_start]
 
-                lq45_out_df[ticker] = pd.concat([buff1_df, buff2_df], ignore_index=True, sort=False)
+                out_df[ticker] = pd.concat([buff1_df, buff2_df], sort=False)
+
             elif self.mode == "backtest":
-                lq45_out_df[ticker] = lq45_df_dict[ticker][(lq45_df_dict[ticker]['Date'] >= self.run_date_start) & 
-                                                           (lq45_df_dict[ticker]['Date'] <= self.run_date_end)]
+                out_df[ticker] = df_dict[ticker][(df_dict[ticker].index >= self.run_date_start) & 
+                                                           (df_dict[ticker].index <= self.run_date_end)]
 
-            ## Reset Index After Dropped
-            lq45_out_df[ticker] = lq45_out_df[ticker].reset_index(drop=True)
+            ## Handle NaN Values
+            out_df[ticker] = handle_nan(out_df[ticker], method=nan_handle_method)
 
-        # Do the same for lq45 index data
-        lq45_index_data.fillna(method='bfill', axis=0, inplace=True)
+            ## Extend price to other values
+            out_df[ticker] = extend_price_df(out_df[ticker])
+
+        # Remove tickers that only have small amounts of data
+        active_tickers = [t for t in active_tickers if t not in rmv_tickers]
         
-        lq45_index_data['Date'] = pd.to_datetime(lq45_index_data['Date'])
-        buff1_df = lq45_index_data[lq45_index_data['Date'] < self.run_date_start].tail(self.max_lookback)
-        buff2_df = lq45_index_data[lq45_index_data['Date'] >= self.run_date_start]
-        
-        ## Combine to one DF Dictionary
-        lq45_out_df['LQ45'] = pd.concat([buff1_df, buff2_df], ignore_index=True, sort=False)
-        lq45_out_df['LQ45'] = lq45_out_df['LQ45'].reset_index(drop=True)
-        
-        return lq45_out_df
+        return out_df
     
     def prepare_indicators(self, df_dict):
+        
         # Take the relevant price series from each pair
-        df_proc = pd.concat([df_dict[self.pair[0]]['Date'], df_dict[self.pair[0]]['Adj Close'], df_dict[self.pair[1]]['Adj Close']], 
-                                axis=1,
-                                keys=['Date', self.pair[0], self.pair[1]])
-
+        strat_df = gen_combined_df(df_dict, [self.pair[0], self.pair[1]], ['price'], add_pfix=True)
+        price_pair = ["price_" + p for p in self.pair]
+        
         # Calculate Rolling Price Spread using Beta Model
-        S1 = df_proc[self.pair[0]]
-        S2 = df_proc[self.pair[1]]
-
+        S1 = strat_df[price_pair[0]]
+        S1.name = 'price'
+        S2 = strat_df[price_pair[1]]
+        S2.name = 'price'
+        
         S1_indep = sm.add_constant(S1)
         result = RollingOLS(S2, S1_indep, window=self.beta_lookback).fit()
-        rolling_beta = result.params[self.pair[0]]
-
-        ## add Rolling Beta to main df
-        df_proc['beta'] = rolling_beta
+        rolling_beta = result.params['price']
+    
+        strat_df['beta'] = rolling_beta
 
         ## calculate rolling spread
-        df_proc['spread'] = df_proc[self.pair[1]] - df_proc['beta'] * df_proc[self.pair[0]]
+        strat_df['spread'] = strat_df[price_pair[1]] - strat_df['beta'] * strat_df[price_pair[0]]
 
         # Generate Technical Indicators (BBand and SMA)
-        df_proc.set_index('Date')
         lookback = round(self.half_life)
-        bbands = ta.bbands(df_proc['spread'], length=lookback, std=self.std)
+        bbands = ta.bbands(strat_df['spread'], length=lookback, std=self.std)
 
         bbands_upper_cname = 'BBU' + '_' + str(lookback) + '_' + str(self.std) + '.0'
         bbands_lower_cname = 'BBL' + '_' + str(lookback) + '_' + str(self.std) + '.0'
         bbands_mid_cname = 'BBM' + '_' + str(lookback) + '_' + str(self.std) + '.0'
 
-        df_proc['spread_BBU'] = bbands[bbands_upper_cname]
-        df_proc['spread_BBL'] = bbands[bbands_lower_cname]
-        df_proc['spread_BBM'] = bbands[bbands_mid_cname]
+        strat_df['spread_BBU'] = bbands[bbands_upper_cname]
+        strat_df['spread_BBL'] = bbands[bbands_lower_cname]
+        strat_df['spread_BBM'] = bbands[bbands_mid_cname]
         
-        return df_proc
+        return strat_df
         
-    def gen_signals(self, df_proc):
+    def gen_signals(self, strat_df):
         
         # Signal Rules
         long_signal = lambda price, bbl: (price <= bbl)
@@ -152,92 +169,69 @@ class Strategy():
 
         # Generate Signals
         last_signal = ''
-        df_proc['signal'] = ''
-        df_proc['signal_ticker'] = ''
-        pair = self.pair
+        strat_df['spread_signal'] = ''
         
-        for i in range(0, len(df_proc)):
+        signal_pair = ["signal_" + p for p in self.pair]
+        for signal_t in signal_pair:
+            strat_df[signal_t] = ''
+        
+        for i in range(0, len(strat_df)):
             if i == 0:
-                df_proc['signal'][i] = ''
+                strat_df['spread_signal'][i] = ''
 
             elif last_signal == '':
-                if long_signal(df_proc['spread'][i], df_proc['spread_BBL'][i]):
-                    df_proc['signal'][i] = 'long_entry'
+                if long_signal(strat_df['spread'][i], strat_df['spread_BBL'][i]):
+                    strat_df['spread_signal'][i] = 'long_entry'
                     last_signal = 'long_entry'
-                    df_proc['signal_ticker'][i] = pair[1]
-                elif long_close_signal(df_proc['spread'][i], df_proc['spread_BBM'][i]):
-                    df_proc['signal'][i] = 'long_close'
+                    strat_df[signal_pair[1]][i] = 'long_entry'
+                elif long_close_signal(strat_df['spread'][i], strat_df['spread_BBM'][i]):
+                    strat_df['spread_signal'][i] = 'long_close'
                     last_signal = 'long_close'
-                    df_proc['signal_ticker'][i] = pair[1]
-                elif short_signal(df_proc['spread'][i], df_proc['spread_BBU'][i]):
-                    df_proc['signal'][i] = 'short_entry'
+                    strat_df[signal_pair[1]][i] = 'long_close'
+                elif short_signal(strat_df['spread'][i], strat_df['spread_BBU'][i]):
+                    strat_df['spread_signal'][i] = 'short_entry'
                     last_signal = 'short_entry'
-                    df_proc['signal_ticker'][i] = pair[0]
-                elif short_close_signal(df_proc['spread'][i], df_proc['spread_BBM'][i]):
-                    df_proc['signal'][i] = 'short_close'
+                    strat_df[signal_pair[0]][i] = 'long_entry'
+                elif short_close_signal(strat_df['spread'][i], strat_df['spread_BBM'][i]):
+                    strat_df['spread_signal'][i] = 'short_close'
                     last_signal = 'short_close'
-                    df_proc['signal_ticker'][i] = pair[0]
+                    strat_df[signal_pair[0]][i] = 'long_close'
                 else:
-                    df_proc['signal'][i] = ''
+                    strat_df['spread_signal'][i] = ''
 
             elif last_signal == 'long_entry':
-                if long_close_signal(df_proc['spread'][i], df_proc['spread_BBM'][i]):
-                    df_proc['signal'][i] = 'long_close'
+                if long_close_signal(strat_df['spread'][i], strat_df['spread_BBM'][i]):
+                    strat_df['spread_signal'][i] = 'long_close'
                     last_signal = 'long_close'
-                    df_proc['signal_ticker'][i] = pair[1]
+                    strat_df[signal_pair[1]][i] = 'long_close'
                 else:
-                    df_proc['signal'][i] = ''
+                    strat_df['spread_signal'][i] = ''
 
             elif last_signal == 'short_entry':
-                if short_close_signal(df_proc['spread'][i], df_proc['spread_BBM'][i]):
-                    df_proc['signal'][i] = 'short_close'
+                if short_close_signal(strat_df['spread'][i], strat_df['spread_BBM'][i]):
+                    strat_df['spread_signal'][i] = 'short_close'
                     last_signal = 'short_close'
-                    df_proc['signal_ticker'][i] = pair[0]
+                    strat_df[signal_pair[0]][i] = 'long_close'
                 else:
-                    df_proc['signal'][i] = ''
+                    strat_df['spread_signal'][i] = ''
 
             elif last_signal == 'long_close' or last_signal == 'short_close':
-                if long_signal(df_proc['spread'][i], df_proc['spread_BBL'][i]):
-                    df_proc['signal'][i] = 'long_entry'
+                if long_signal(strat_df['spread'][i], strat_df['spread_BBL'][i]):
+                    strat_df['spread_signal'][i] = 'long_entry'
                     last_signal = 'long_entry'
-                    df_proc['signal_ticker'][i] = pair[1]
-                elif short_signal(df_proc['spread'][i], df_proc['spread_BBU'][i]):
-                    df_proc['signal'][i] = 'short_entry'
+                    strat_df[signal_pair[1]][i] = 'long_entry'
+                elif short_signal(strat_df['spread'][i], strat_df['spread_BBU'][i]):
+                    strat_df['spread_signal'][i] = 'short_entry'
                     last_signal = 'short_entry'
-                    df_proc['signal_ticker'][i] = pair[0]
+                    strat_df[signal_pair[0]][i] = 'long_entry'
                 else:
-                    df_proc['signal'][i] = ''
+                    strat_df['spread_signal'][i] = ''
                     
-        return df_proc
-    
-    def calc_returns(self, df_proc):
-        '''
-        Calculate returns and cumulative returns per entry on dataframe.
-
-        Strategy Returns: 
-        - (Short Spread) returns(S2 Buy price, S2 Close Price). 
-        - (Long Spread) returns(S1 Buy price, S1 Close Price). 
-        '''
-        last_signal = ''
-        last_ticker = ''
-        df_proc['return'] = np.nan
-        for i in range(0, len(df_proc)):
-            if last_signal == 'long_entry' or last_signal == 'short_entry':
-                df_proc["return"][i] = (df_proc[last_ticker][i] - df_proc[last_ticker][i-1]) / df_proc[last_ticker][i-1]
-            elif last_signal == 'long_close' or last_signal == 'short_close':
-                df_proc["return"][i] = 0
-            else:
-                df_proc["return"][i] = 0
-
-            if not(df_proc["signal"][i] == ''):
-                last_signal = df_proc["signal"][i] 
-                last_ticker = df_proc['signal_ticker'][i]
-
-        df_proc["cum_return"] = (1 + df_proc["return"]).cumprod()
-        return df_proc
+        return strat_df
     
     def run(self):
         self.df_data_dict = self.prepare_data()
-        self.df_proc = self.prepare_indicators(self.df_data_dict)
-        self.df_proc = self.gen_signals(self.df_proc)
-        self.df_proc = self.calc_returns(self.df_proc)
+        self.strat_df = self.prepare_indicators(self.df_data_dict)
+        self.strat_df = self.gen_signals(self.strat_df)
+        
+        return self.strat_df
