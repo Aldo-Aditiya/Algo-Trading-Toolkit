@@ -130,7 +130,10 @@ class RandomPriceData():
                 
             n += 1
         
-        return random_series
+        if n < n_break:
+            return random_series
+        else:
+            raise ValueError("Iteration broken before finding suitable series")
     
     def random_gaussian(self, n_length=None, mean=None, std=None):
         return np.random.normal(loc=mean, scale=std, size=n_length)
