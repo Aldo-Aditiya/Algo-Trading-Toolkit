@@ -305,3 +305,31 @@
 2022-07-27 15:41:02,511 | root | INFO | Run Paper Trading on 20220707_TBIG-TOWR_sq_v0-2.json
 2022-07-27 15:41:05,947 | root | INFO | Run Paper Trading on 20220707_ERAA-AMRT_kf.json
 2022-07-27 15:41:09,404 | root | INFO | Run Paper Trading on 20220707_PGAS-MEDC_kf.json
+2022-08-01 10:36:33,440 | root | INFO | Run Cron Job
+2022-08-01 10:36:34,509 | root | INFO | Run Data Pull on 20220525_lq45_index-pull.py
+2022-08-01 10:36:40,018 | root | INFO | Run Data Pull on 20220525_lq45-pull.py
+2022-08-01 10:36:42,526 | root | INFO | Run Paper Trading on 20220607_INCO-ANTM_sq_v0-1.json
+2022-08-01 10:36:45,021 | root | INFO | Run Paper Trading on 20220607_INCO-ANTM_sq_v0-2.json
+2022-08-01 10:36:47,510 | root | INFO | Run Paper Trading on 20220607_TPIA-ITMG_sq_v0-1.json
+2022-08-01 10:36:49,996 | root | INFO | Run Paper Trading on 20220607_TPIA-ITMG_sq_v0-2.json
+2022-08-01 10:36:50,729 | root | INFO | Run Paper Trading on 20220617_BBNI-BMRI_sq_v0-2-1.json
+2022-08-01 10:36:50,858 | root | INFO | Run Paper Trading on 20220617_INCO-ANTM_sq_v0-2-1.json
+2022-08-01 10:36:51,323 | root | INFO | Run Paper Trading on 20220617_TPIA-ITMG_sq_v0-2-1.json
+2022-08-01 10:36:51,438 | root | INFO | Run Paper Trading on 20220707_HRUM-ADRO_sq_v0-2.json
+2022-08-01 10:36:51,895 | root | INFO | Run Paper Trading on 20220707_TBIG-TOWR_sq_v0-2.json
+2022-08-01 10:36:52,020 | root | INFO | Run Paper Trading on 20220707_ERAA-AMRT_kf.json
+2022-08-01 10:36:52,473 | root | INFO | Run Paper Trading on 20220707_PGAS-MEDC_kf.json
+2022-08-01 10:37:48,772 | root | INFO | Run Cron Job
+2022-08-01 10:37:49,677 | root | INFO | Run Data Pull on 20220525_lq45_index-pull.py
+2022-08-01 10:37:55,571 | root | INFO | Run Data Pull on 20220525_lq45-pull.py
+2022-08-01 10:37:59,228 | root | INFO | Run Paper Trading on 20220607_INCO-ANTM_sq_v0-1.json
+2022-08-01 10:38:02,866 | root | INFO | Run Paper Trading on 20220607_INCO-ANTM_sq_v0-2.json
+2022-08-01 10:38:06,507 | root | INFO | Run Paper Trading on 20220607_TPIA-ITMG_sq_v0-1.json
+2022-08-01 10:38:10,143 | root | INFO | Run Paper Trading on 20220607_TPIA-ITMG_sq_v0-2.json
+2022-08-01 10:38:13,765 | root | INFO | Run Paper Trading on 20220617_BBNI-BMRI_sq_v0-2-1.json
+2022-08-01 10:38:17,403 | root | INFO | Run Paper Trading on 20220617_INCO-ANTM_sq_v0-2-1.json
+2022-08-01 10:38:21,050 | root | INFO | Run Paper Trading on 20220617_TPIA-ITMG_sq_v0-2-1.json
+2022-08-01 10:38:24,650 | root | INFO | Run Paper Trading on 20220707_HRUM-ADRO_sq_v0-2.json
+2022-08-01 10:38:28,275 | root | INFO | Run Paper Trading on 20220707_TBIG-TOWR_sq_v0-2.json
+2022-08-01 10:38:31,793 | root | INFO | Run Paper Trading on 20220707_ERAA-AMRT_kf.json
+2022-08-01 10:38:35,280 | root | INFO | Run Paper Trading on 20220707_PGAS-MEDC_kf.json
