@@ -884,7 +884,7 @@ class RandomizedBacktest(Backtest):
         super().init_signal(strat_df, ticker_weights)
         self.get_trade_indexes()
         
-    def run_simulation(self, strat_df, ticker_weights, random_f, num_iter=1000, **kwargs):
+    def run_backtest_simulation(self, strat_df, ticker_weights, random_f, num_iter=1000, **kwargs):
         '''
         Run backtest simulation using defined random function
         '''
