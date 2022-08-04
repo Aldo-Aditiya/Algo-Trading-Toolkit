@@ -40,12 +40,12 @@ class Backtest():
             
         self.strat_df = None
         
-    def run(self, strat_df, ticker_weights, prep_result_to_df=False):
+    def run(self, strat_df, ticker_weights=None, prep_result_to_df=False):
         '''
         Run Backtest and generate results
         '''
         # Setup
-        self.init_signal(strat_df, ticker_weights)
+        self.init_signal(strat_df, ticker_weights=ticker_weights)
         self.calc_returns()
         self.calc_cum_returns()
         self.remove_unpaired_signals()
@@ -117,7 +117,7 @@ class Backtest():
 
             return result_dict
               
-    def init_signal(self, strat_df, ticker_weights):
+    def init_signal(self, strat_df, ticker_weights=None):
         '''
         Initializes signal dataframe for use in backtesting
         Assumptions: 
@@ -131,9 +131,15 @@ class Backtest():
         '''
         self.strat_df = strat_df.copy()
         
-        self.ticker_weights = ticker_weights
         self.signal_tickers = self.get_signal_tickers()
         self.tickers = [self.parse_col_str(signal_t)[1] for signal_t in self.signal_tickers]
+        
+        if ticker_weights != None:
+            self.ticker_weights = ticker_weights
+        else:
+            self.ticker_weights = {}
+            for t in self.tickers:
+                self.ticker_weights[t] = 1/len(self.tickers)
         
         # Change NaN Values in signals to ""
         for signal_t in self.signal_tickers:

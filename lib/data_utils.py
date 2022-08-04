@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 from datetime import datetime
 
@@ -58,7 +59,6 @@ class RandomPriceData():
     def run_simulation(self, random_f, num_iter=1000, **kwargs):
         # Simulation
         self.simulate(random_f, num_iter=num_iter, **kwargs)
-        return self.random_series
     
     # Random Processes
     def random_oscillation(self, n_length=None, t_length=None, amp=None, std_scale=None, mode='sawtooth'):
@@ -74,8 +74,8 @@ class RandomPriceData():
             trend_step = amp / t_length
             cycles = np.ceil(n_length/t_length)
 
-            uptrend = list(np.arange(start=-amp/2, stop=amp/2, step=trend_step))
-            downtrend = list(np.arange(start=amp/2, stop=-amp/2, step=-trend_step))
+            uptrend = list(np.arange(start=0, stop=amp, step=trend_step))
+            downtrend = list(np.arange(start=amp, stop=0, step=-trend_step))
 
             alltrends = [uptrend + downtrend] * int(np.ceil(cycles))
             alltrends = sum(alltrends, [])
@@ -101,32 +101,39 @@ class RandomPriceData():
         ## Convert to DF
         random_series = pd.Series(random_arr, index=date_indices)
         
+        # Slight upwards shift to the series to prevent price values below zero
+        minval = random_series.min()
+        if minval < 0:
+            random_series = random_series + abs(minval*1.1)
+        
         return random_series
     
-    def random_trend(self, movement="up", frac_change=0.1, frac_change_error=0.05, random_f=None, n_break=100, **kwargs):
+    def random_trend(self, movement="up", min_frac_change=None, stochastic_process=None, n_break=100, **kwargs):
         '''
         Generate a random up/down trend series with around frac_change difference in start vs end prices.
         '''
-        assert random_f is not None, "random_f must be given"
-        
-        # Generate Boundaries
-        if movement=="up":
-            lower_bound = frac_change - frac_change_error
-            upper_bound = frac_change + frac_change_error
+        def satisfied_test(change, movement, min_frac_change=min_frac_change):
+            if min_frac_change is None:
+                min_frac_change = 0
             
-        elif movement=="down":
-            lower_bound = -(frac_change + frac_change_error)
-            upper_bound = -(frac_change - frac_change_error)
+            if movement=="up":
+                if change > min_frac_change:
+                    return True
+            elif movement=="down":
+                if change < -min_frac_change:
+                    return True
+            return False
+        
+        assert stochastic_process is not None, "random_f must be given"
         
         # Generate random series until the boundaries are satisfied
-        change_satistfied = False
+        change_satisfied = False
         n = 0
         while not(change_satisfied) and n < n_break:
-            random_series = random_f(**kwargs)
-            change = random_series[-1] - random_series[0] / random_series[0]
+            random_series = stochastic_process(**kwargs)
+            change = (random_series[-1] - random_series[0]) / random_series[0]
             
-            if lower_bound <= change <= upper_bound:
-                change_satisfied = True
+            change_satisfied = satisfied_test(change, movement)
                 
             n += 1
         
@@ -231,7 +238,8 @@ class RandomPriceData():
         assert self.random_series != [], "No random series has been sampled"
         
         # Aggregate All Data
-        random_ret_df = pd.DataFrame(np.array(self.random_series.values).transpose(), 
+        random_ret = [s.values for s in self.random_series]
+        random_ret_df = pd.DataFrame(np.array(random_ret).transpose(), 
                                      columns=[str(i) for i in range(len(self.random_series))],
                                      index=self.random_series[0].index)
         

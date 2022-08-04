@@ -80,12 +80,15 @@ class LQ45BaseStrategy():
             ## Convert Adj Close to price
             df_dict[ticker]['price'] = df_dict[ticker]['Adj Close']
             df_dict[ticker].drop('Adj Close', axis=1, inplace=True)
+            
+            ## Handle NaN Values
+            df_dict[ticker] = handle_nan(df_dict[ticker].sort_index(), method=nan_handle_method)
 
         # Separate into In Sample and Out Sample
         nan_cnt_threshold = 252*2
 
         in_df = {}
-        out_df = {}
+        df_data_dict = {}
         rmv_tickers = []
         for ticker in active_tickers:
             ## Take Out Sample Data
@@ -94,19 +97,16 @@ class LQ45BaseStrategy():
                 buff1_df = df_dict[ticker][df_dict[ticker].index < self.run_date_start].tail(self.max_lookback)
                 buff2_df = df_dict[ticker][df_dict[ticker].index >= self.run_date_start]
 
-                out_df[ticker] = pd.concat([buff1_df, buff2_df], sort=False)
+                df_data_dict[ticker] = pd.concat([buff1_df, buff2_df], sort=False)
 
             elif self.mode == "backtest":
-                out_df[ticker] = df_dict[ticker][(df_dict[ticker].index >= self.run_date_start) & 
+                df_data_dict[ticker] = df_dict[ticker][(df_dict[ticker].index >= self.run_date_start) & 
                                                            (df_dict[ticker].index <= self.run_date_end)]
 
-            ## Handle NaN Values
-            out_df[ticker] = handle_nan(out_df[ticker], method=nan_handle_method)
-
             ## Extend price to other values
-            out_df[ticker] = extend_price_df(out_df[ticker])
+            df_data_dict[ticker] = extend_price_df(df_data_dict[ticker])
 
         # Remove tickers that only have small amounts of data
         active_tickers = [t for t in active_tickers if t not in rmv_tickers]
         
-        return out_df
+        return df_data_dict
