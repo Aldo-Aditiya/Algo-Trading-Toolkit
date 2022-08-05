@@ -108,19 +108,22 @@ class RandomPriceData():
         
         return random_series
     
-    def random_trend(self, movement="up", min_frac_change=None, stochastic_process=None, n_break=100, **kwargs):
+    def random_trend(self, movement="up", min_frac_change=None, max_frac_change=None, stochastic_process=None, n_break=100, **kwargs):
         '''
         Generate a random up/down trend series with around frac_change difference in start vs end prices.
         '''
-        def satisfied_test(change, movement, min_frac_change=min_frac_change):
+        def satisfied_test(change, movement, min_frac_change=min_frac_change, max_frac_change=max_frac_change):
             if min_frac_change is None:
                 min_frac_change = 0
+                
+            if max_frac_change is None:
+                max_frac_change = 9999
             
             if movement=="up":
-                if change > min_frac_change:
+                if (change > min_frac_change) and (change < max_frac_change):
                     return True
             elif movement=="down":
-                if change < -min_frac_change:
+                if (change < -min_frac_change) and (change > -max_frac_change):
                     return True
             return False
         
