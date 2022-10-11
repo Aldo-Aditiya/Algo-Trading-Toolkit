@@ -1,3 +1,14 @@
-# Algorithmic Trading
+# Algorithmic Trading Framework
 
-Initial explorations are mainly in IDX market.
+Work in Progress.
+
+Personal framework for developing algorithmic trading strategies.
+
+Consists of:
+
+- Data Update Functionality
+- Paper Trading Functionality
+- Database for Result of Paper Traded Strategies
+- Backtesting Library
+- Strategy Experiments
+
