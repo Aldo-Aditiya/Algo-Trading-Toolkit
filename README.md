@@ -6,9 +6,10 @@ Personal framework for developing algorithmic trading strategies.
 
 Consists of:
 
-- Data Update Functionality
+- Data Pull Functionality
 - Paper Trading Functionality
-- Database for Result of Paper Traded Strategies
+- Cron script for automatic Data Pull and Paper Trading
+- Database for Strategy Results
 - Backtesting Library
 - Strategy Experiments
 
